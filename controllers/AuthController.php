@@ -21,7 +21,7 @@ class AuthController {
         );
     }
 
-    // Login de usuario
+    // Login de usuario (ahora guarda roles en session)
     public function login(array $data): ?array {
         if (empty($data['correo']) || empty($data['password'])) {
             return null;
@@ -30,8 +30,8 @@ class AuthController {
         $user = $this->user->loginUsuario($data['correo'], $data['password']);
 
         if ($user) {
-            // Guardamos la sesión
-            session_start();
+            // Guardamos la sesión (sin datos sensibles)
+            if (session_status() !== PHP_SESSION_ACTIVE) session_start();
             $_SESSION['usuario'] = $user;
             return $user;
         }
@@ -41,7 +41,7 @@ class AuthController {
 
     // Cerrar sesión
     public function logout(): void {
-        session_start();
+        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
         session_destroy();
     }
 }
