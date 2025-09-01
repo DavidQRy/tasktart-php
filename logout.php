@@ -1,10 +1,6 @@
 <?php
-require_once __DIR__.'/controllers/AuthController.php';
-session_destroy();
-$auth = new AuthController();
-$auth->logout();
+    session_start();
+    session_destroy();
+    header("Location: login.php");
 
-// Redirigir al login
-header("Location: login.php");
-exit;
 ?>
