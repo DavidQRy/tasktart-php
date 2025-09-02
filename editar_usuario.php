@@ -12,25 +12,23 @@ if (!isset($_SESSION['usuario']) || !$usuarioModel->esAdmin((int)$_SESSION['usua
 
 // Validar que se haya pasado un ID
 if (!isset($_GET['id'])) {
-    die("ID de usuario no especificado.");
+    header("Location: dashboard.php?msg=ID de usuario no especificado.");
+    exit;
 }
 
 $id = intval($_GET['id']);
 $usuario = $usuarioModel->getUserById($id);
 
 if (!$usuario) {
-    die("Usuario no encontrado.");
+    header("Location: dashboard.php?msg=Usuario no encontrado.");
+    exit;
 }
 
 // Roles disponibles y roles actuales del usuario
 $roles = $usuarioModel->obtenerRoles();
 $currentRoles = $usuarioModel->obtenerRolesPorUsuario($id);
-$currentRoleId = null;
-if (!empty($currentRoles)) {
-    $currentRoleId = (int)$currentRoles[0]['id_rol']; // asumimos rol único en la UI
-}
+$currentRoleId = !empty($currentRoles) ? (int)$currentRoles[0]['id_rol'] : null;
 
-$message = '';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -40,19 +38,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_rol = isset($_POST['id_rol']) && $_POST['id_rol'] !== '' ? intval($_POST['id_rol']) : null;
 
     if ($nombre === '' || $correo === '') {
-        $error = "Nombre y correo son obligatorios.";
+        $error = "⚠ Nombre y correo son obligatorios.";
     } else {
         $ok1 = $usuarioModel->updateUsuario($id, $nombre, $correo, $password !== '' ? $password : null);
         $ok2 = $usuarioModel->setUserRole($id, $id_rol);
 
         if ($ok1 && $ok2) {
-            $message = "Usuario actualizado correctamente.";
-            // Actualizar datos en la página
-            $usuario = $usuarioModel->getUserById($id);
-            $currentRoles = $usuarioModel->obtenerRolesPorUsuario($id);
-            $currentRoleId = !empty($currentRoles) ? (int)$currentRoles[0]['id_rol'] : null;
+            header("Location: dashboard.php?msg=✅ Usuario actualizado correctamente.");
+            exit;
         } else {
-            $error = "Ocurrió un error al actualizar. Revisa logs.";
+            $error = "❌ Ocurrió un error al actualizar. Revisa logs.";
         }
     }
 }
@@ -62,6 +57,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Editar Usuario</title>
+    <link rel="stylesheet" href="visual\css\style.css">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         label { display:block; margin-top:8px; }
         input, select { padding:6px; width:300px; }
@@ -70,39 +72,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <h2>Editar Usuario (ID <?php echo $usuario['id_usuario']; ?>)</h2>
+    <h1>Editar Usuario</h1>
+    
+<?php if (!empty($message)) : ?>
+<script>
+  Swal.fire({
+    title: "Aviso",
+    text: "<?php echo htmlspecialchars($message); ?>",
+    icon: "<?php echo strpos($message, '✅') !== false ? 'success' : 'error'; ?>"
+  });
+</script>
+<?php endif; ?>
 
-    <?php if ($message): ?>
-        <p class="msg-success"><?php echo htmlspecialchars($message); ?></p>
-    <?php endif; ?>
-    <?php if ($error): ?>
-        <p class="msg-error"><?php echo htmlspecialchars($error); ?></p>
-    <?php endif; ?>
+<?php if (!empty($error)): ?>
+<script>
+  Swal.fire({
+    title: "Error",
+    text: "<?php echo htmlspecialchars($error); ?>",
+    icon: "error"
+  });
+</script>
+<?php endif; ?>
+    <div class="formRegistro">
 
-    <form method="POST">
-        <label>Nombre:</label>
-        <input type="text" name="nombre" value="<?php echo htmlspecialchars($usuario['nombre']); ?>" required>
-
-        <label>Correo:</label>
-        <input type="email" name="correo" value="<?php echo htmlspecialchars($usuario['correo']); ?>" required>
-
-        <label>Cambiar contraseña (opcional):</label>
-        <input type="password" name="password" placeholder="Dejar vacío para mantener la contraseña">
-
-        <label>Rol:</label>
-        <select name="id_rol">
-            <option value="">-- Sin rol --</option>
-            <?php foreach ($roles as $r): ?>
-                <option value="<?php echo $r['id_rol']; ?>" <?php if ($currentRoleId !== null && $currentRoleId == $r['id_rol']) echo 'selected'; ?>>
-                    <?php echo htmlspecialchars($r['nombre_rol']); ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-
-        <br><br>
-        <button type="submit">Guardar Cambios</button>
-    </form>
-
-    <p><a href="dashboard.php">⬅ Volver al Dashboard</a></p>
+        <form method="POST">
+            <label class="dato">
+                <input type="text" name="nombre" id="nombre" required 
+                    value="<?php echo htmlspecialchars($usuario['nombre'] ?? ''); ?>" 
+                    placeholder="Nombre">
+            </label>
+            
+            <label class="dato">
+                <input type="email" name="correo" id="correo" required 
+                    value="<?php echo htmlspecialchars($usuario['correo'] ?? ''); ?>" 
+                    placeholder="Correo Electrónico">
+            </label>
+            
+            <label class="dato">
+                <input type="password" name="password" id="contraseña" 
+                    placeholder="Contraseña (dejar vacío para no cambiar)">
+            </label>
+            
+            <label class="dato">
+                <select name="id_rol">
+                    <option value="">-- Seleccione un rol --</option>
+                    <?php foreach ($roles as $r): ?>
+                        <option value="<?php echo $r['id_rol']; ?>" 
+                            <?php if (isset($currentRoleId) && $currentRoleId == $r['id_rol']) echo 'selected'; ?>>
+                            <?php echo htmlspecialchars($r['nombre_rol']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Guardar Cambios
+            </button>
+            <a href="dashboard.php" class="btn btn-secondary ms-2">
+                <i class="fas fa-arrow-left"></i> Volver al Dashboard
+            </a>
+        </form>
+    
+    </div>
 </body>
 </html>

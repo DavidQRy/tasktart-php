@@ -1,0 +1,189 @@
+:root {
+  --color-principal: #e8854f;
+  --color-secundario: #8accf0;
+  --color-boton: #854fe8;
+  --color-blanco: #ffffff;
+  --color-texto: #333333;
+  --color-overlay: rgba(0, 0, 0, 0.2);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background:
+    linear-gradient(var(--color-overlay), var(--color-overlay)),
+    url("background.png");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  min-height: 100vh;
+  color: var(--color-texto);
+  transition: background 0.5s ease, color 0.5s ease;
+}
+
+.header {
+  width: 100%;
+  height: 100px;
+  background-color: var(--color-principal);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+}
+
+.header h1 {
+  font-size: 2.2em;
+  color: var(--color-blanco);
+}
+
+.navBar {
+  display: flex;
+  gap: 20px;
+}
+
+.navBar a {
+  text-decoration: none;
+  color: var(--color-blanco);
+  font-size: 1.1em;
+  padding: 8px 15px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.navBar a:hover {
+  background-color: var(--color-secundario);
+  color: var(--color-texto);
+}
+
+.formRegistro {
+  margin: 50px auto;
+  display: flex;
+  justify-content: center;
+}
+
+form {
+  background: rgba(138, 204, 240, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  width: 90%;
+  max-width: 500px;
+  padding: 40px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+form h1 {
+  margin-bottom: 20px;
+  font-size: 1.8em;
+  text-align: center;
+  color: var(--color-texto);
+}
+
+.dato {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.dato input,
+select {
+  width: 100%;
+  height: 45px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  padding: 0 15px;
+  font-size: 1em;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dato input:focus,
+select:focus {
+  outline: none;
+  border: 1px solid var(--color-principal);
+  box-shadow: 0 0 8px rgba(232, 133, 79, 0.5);
+}
+
+form button {
+  background: linear-gradient(135deg, #854fe8, #6a30d9);
+  color: var(--color-blanco);
+  width: 100%;
+  height: 45px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.2em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+form button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(133, 79, 232, 0.5);
+}
+
+form button:active {
+  transform: scale(0.95);
+}
+
+form p {
+  margin-top: 15px;
+  font-size: 0.9em;
+  text-align: center;
+}
+
+form p a {
+  color: var(--color-boton);
+  text-decoration: none;
+  font-weight: bold;
+}
+
+form p a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    height: auto;
+    padding: 20px;
+  }
+
+  .navBar {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  form {
+    padding: 20px;
+  }
+}
+
+/* modo oscuro */
+body.dark-mode {
+  --color-principal: #2d2d2d;
+  --color-secundario: #1e1e1e;
+  --color-boton: #6a5acd;
+  --color-blanco: #f1f1f1;
+  --color-texto: #e0e0e0;
+  --color-overlay: rgba(0, 0, 0, 0.6);
+}
+
+.back-link {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  color: #4a90e2;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
