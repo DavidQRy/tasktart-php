@@ -20,6 +20,7 @@ $msg = $_GET['msg'] ?? null;
   <meta charset="UTF-8">
   <title>Dashboard - TaskManager</title>
   <link rel="stylesheet" href="visual/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- FontAwesome -->
@@ -29,21 +30,18 @@ $msg = $_GET['msg'] ?? null;
 </head>
 <body>
 
-<header class="header">
-  <h1>TaskTart</h1>
-  <nav class="navBar">
-    <a href="dashboard.php">Inicio</a>
-    <a href="tareas.php">Mis Tareas</a>
-    <a href="perfil.php">Perfil</a>
-    <a href="configuracion.php">Configuración</a>
-      <a href="logout.php" class="btn btn-secondary mb-3">
-    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
-  </a>
-  </nav>
-  <button onclick="document.body.classList.toggle('dark-mode')">
-    🌙 / ☀️
-  </button>
-</header>
+    <header class="header">
+        <h1>TaskTart</h1>
+        <nav class="navBar">
+            <a href="dashboard.php">Dashboard</a>
+            <a href="">Tareas</a>
+            <a href="">Perfil</a>
+            <a href="logout.php" class="logout-btn">Cerrar sesión</a>
+            <button class="dark-mode-toggle" onclick="document.body.classList.toggle('dark-mode')">
+                🌙 / ☀️
+            </button>
+        </nav>
+    </header>
 <div class="bg-white p-5">
     <h2>Bienvenido <?php echo htmlspecialchars($user['nombre']); ?> 👋</h2>
     <p>Has iniciado sesión correctamente.</p>
