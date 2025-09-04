@@ -60,12 +60,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label class="dato">
                 <input type="text" name="nombre" id="nombre" required placeholder="Nombre">
             </label>
-            <label class="dato">
+            <!-- <label class="dato">
                 <input type="text" name="apellido" id="apellido" required placeholder="Apellido">
             </label>
             <label class="dato">
                 <input type="int" name="telefono" id="telefono" required placeholder="Teléfono">
-            </label>
+            </label> -->
             <label class="dato">
                 <input type="varchar" name="correo" id="correo" required placeholder="Correo Electrónico">
             </label>

@@ -72,7 +72,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <h1>Editar Usuario</h1>
+    <header class="header">
+        <h1>TaskTart</h1>
+        <nav class="navBar">
+            <a href="dashboard.php" class="btn btn-secondary ms-2">
+                <i class="fas fa-arrow-left"></i> Volver al Dashboard
+            </a>
+            <a href="">Tareas</a>
+            <a href="">Perfil</a>
+            <a href="logout.php" class="logout-btn">Cerrar sesión</a>
+            <button class="dark-mode-toggle" onclick="document.body.classList.toggle('dark-mode')">
+                🌙 / ☀️
+            </button>
+        </nav>
+    </header>
     
 <?php if (!empty($message)) : ?>
 <script>
@@ -127,9 +140,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-save"></i> Guardar Cambios
             </button>
-            <a href="dashboard.php" class="btn btn-secondary ms-2">
-                <i class="fas fa-arrow-left"></i> Volver al Dashboard
-            </a>
         </form>
     
     </div>
