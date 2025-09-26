@@ -1,0 +1,183 @@
+:root {
+    --color-principal: #e8854f;
+    --color-secundario: #8accf0;
+    --color-boton: #854fe8;
+    --color-blanco: #ffffff;
+    --color-texto: #333333;
+    --color-overlay: rgba(0, 0, 0, 0.2);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background:
+        linear-gradient(var(--color-overlay), var(--color-overlay)),
+        url("background.png");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: var(--color-texto);
+    transition: background 0.5s ease, color 0.5s ease;
+}
+
+.header {
+    width: 100%;
+    height: 100px;
+    background-color: var(--color-principal);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+}
+
+.header h1 {
+    font-size: 2.2em;
+    color: var(--color-blanco);
+}
+
+.navBar {
+    display: flex;
+    gap: 20px;
+}
+
+.navBar a {
+    text-decoration: none;
+    color: var(--color-blanco);
+    font-size: 1.1em;
+    padding: 8px 15px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+:root {
+    --primary-color: #e8854f;
+    --secondary-color: #6c757d;
+    --success-color: #1cc88a;
+    --info-color: #36b9cc;
+    --warning-color: #f6c23e;
+    --danger-color: #e74a3b;
+    --light-color: #f8f9fc;
+    --dark-color: #5a5c69;
+}
+
+.plan-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.plan-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.plan-header {
+    padding: 1.5rem;
+    color: white;
+    text-align: center;
+}
+
+.plan-free .plan-header {
+    background-color: var(--secondary-color);
+}
+
+.plan-starter .plan-header {
+    background-color: var(--info-color);
+}
+
+.plan-pro .plan-header {
+    background-color: var(--primary-color);
+}
+
+.plan-business .plan-header {
+    background-color: var(--warning-color);
+}
+
+.plan-anual .plan-header {
+    background-color: var(--success-color);
+}
+
+.plan-price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 1rem 0;
+}
+
+.plan-period {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.plan-features {
+    padding: 1.5rem;
+}
+
+.plan-features ul {
+    list-style: none;
+    padding: 0;
+}
+
+.plan-features li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.plan-features li:last-child {
+    border-bottom: none;
+}
+
+.plan-features i {
+    color: var(--success-color);
+    margin-right: 0.5rem;
+}
+
+.plan-action {
+    padding: 1.5rem;
+    text-align: center;
+    background-color: #f8f9fa;
+}
+
+.recommended-badge {
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    background-color: var(--warning-color);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.section-title {
+    text-align: center;
+    margin: 3rem 0 2rem;
+    color: var(--dark-color);
+}
+
+.section-subtitle {
+    text-align: center;
+    margin-bottom: 3rem;
+    color: var(--secondary-color);
+}
+
+.dark-mode {
+    background-color: #1a1a1a;
+    color: #f8f9fa;
+}
+
+.dark-mode .plan-action {
+    background-color: #2d2d2d;
+}
+
+.dark-mode .plan-features li {
+    border-bottom: 1px solid #444;
+}

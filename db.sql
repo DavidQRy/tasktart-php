@@ -56,3 +56,23 @@ CREATE TABLE historial_tareas (
     FOREIGN KEY (id_tarea) REFERENCES tareas(id_tarea) ON DELETE CASCADE,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE SET NULL
 );
+
+
+-- MÓDULO TRANSACCIONAL (NUEVAS TABLAS)
+
+CREATE TABLE planes (
+    id_plan SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    precio DECIMAL(10,2) NOT NULL,
+    duracion_dias INT NOT NULL -- cuánto dura el plan
+);
+
+CREATE TABLE pagos (
+    id_pago SERIAL PRIMARY KEY,
+    id_usuario INT REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+    id_plan INT REFERENCES planes(id_plan) ON DELETE CASCADE,
+    fecha_pago TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    estado VARCHAR(20) DEFAULT 'Pendiente', -- Pendiente, Completado, Fallido
+    referencia VARCHAR(100) -- simulación de un ID de transacción
+);

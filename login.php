@@ -40,8 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href="register.php">Registrarse</a>
         </nav>
         <button onclick="document.body.classList.toggle('dark-mode')">
-  🌙 / ☀️
-</button>
+            🌙 / ☀️
+        </button>
     </header>
      <div class="formRegistro">
 
