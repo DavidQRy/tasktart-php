@@ -1,184 +1,63 @@
+<?php
+session_start();
+require_once __DIR__ . '/controllers/TareaController.php';
+require_once __DIR__ . '/models/User.php';
+
+// Solo usuarios logueados
+if (!isset($_SESSION['usuario'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$controller = new TareaController();
+$usuarioModel = new User();
+$usuarios = $usuarioModel->obtenerUsuariosConRoles();
+
+// Procesar acciones
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['accion']) && $_POST['accion'] === 'crear') {
+        $controller->store();
+    } elseif (isset($_POST['accion']) && $_POST['accion'] === 'editar' && isset($_POST['id_tarea'])) {
+        $controller->update($_POST['id_tarea']);
+    }
+} elseif (isset($_GET['delete'])) {
+    $controller->delete($_GET['delete']);
+}
+
+$conteo = $controller->modelo->contarTareas();
+$pendientes = $controller->modelo->obtenerPorEstado("Pendiente");
+$progreso   = $controller->modelo->obtenerPorEstado("En progreso");
+$completadas= $controller->modelo->obtenerPorEstado("Completada");
+$total = $conteo['Pendiente'] + $conteo['En progreso'] + $conteo['Completada'];
+?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <title>TaskStart - Dashboard de Tareas</title>
     <style>
-        .header {
-            background-color: #e8854f;
-            color: white;
-            padding: 15px 0;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            margin: 0 20px;
-            font-size: 16px;
-        }
-
-        .nav-links a:hover {
-            color: #ffccaa;
-        }
-
-        .dark-mode-btn {
-            background-color: white;
-            border: 1px solid #ccc;
-            color: #333;
-            padding: 8px 12px;
-            margin-left: 20px;
-            border-radius: 3px;
-            font-size: 14px;
-        }
-
-        .main-content {
-            padding: 30px;
-            background-color: #f5f5f5;
-            min-height: 100vh;
-        }
-
-        .task-columns {
-            display: flex;
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .task-column {
-            flex: 1;
-            background-color: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .column-title {
-            background-color: #8accf0;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            margin: -15px -15px 15px -15px;
-            border-radius: 8px 8px 0 0;
-        }
-
-        .task-card {
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-        }
-
-        .task-title {
-            font-weight: bold;
-            color: #333333;
-        }
-
-        .task-description {
-            color: #666;
-            margin: 8px 0;
-        }
-
-        .priority-high {
-            background-color: #dc3545;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-size: 12px;
-        }
-
-        .priority-medium {
-            background-color: #ffc107;
-            color: black;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-size: 12px;
-        }
-
-        .priority-low {
-            background-color: #28a745;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-size: 12px;
-        }
-
-        .task-date {
-            color: #999;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-
-        .add-btn {
-            background-color: #854fe8;
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-
-        .stats {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .stat-box {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            text-align: center;
-            flex: 1;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #e8854f;
-        }
-
-        /* Dark mode */
-        body.dark-mode {
-            background-color: #333;
-            color: white;
-        }
-
-        body.dark-mode .main-content {
-            background-color: #444;
-        }
-
-        body.dark-mode .task-column {
-            background-color: #555;
-        }
-
-        body.dark-mode .task-card {
-            background-color: #666;
-            border-color: #777;
-            color: white;
-        }
-
-        body.dark-mode .stat-box {
-            background-color: #555;
-            color: white;
-        }
-
-        @media (max-width: 768px) {
-            .task-columns {
-                flex-direction: column;
-            }
-            .stats {
-                flex-direction: column;
-            }
-        }
+        .header { background-color: #e8854f; color: white; padding: 15px 0; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .nav-links a { color: white; text-decoration: none; margin: 0 20px; font-size: 16px; }
+        .nav-links a:hover { color: #ffccaa; }
+        .dark-mode-btn { background-color: white; border: 1px solid #ccc; color: #333; padding: 8px 12px; margin-left: 20px; border-radius: 3px; font-size: 14px; }
+        .main-content { padding: 30px; background-color: #f5f5f5; min-height: 100vh; }
+        .task-columns { display: flex; gap: 20px; margin-top: 20px; }
+        .task-column { flex: 1; background-color: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .column-title { background-color: #8accf0; color: white; padding: 10px; text-align: center; margin: -15px -15px 15px -15px; border-radius: 8px 8px 0 0; }
+        .task-card { background-color: #ffffff; border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .task-title { font-weight: bold; color: #333333; }
+        .task-description { color: #666; margin: 8px 0; }
+        .priority-alta { background-color: #dc3545; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px; }
+        .priority-media { background-color: #ffc107; color: black; padding: 3px 8px; border-radius: 3px; font-size: 12px; }
+        .priority-baja { background-color: #28a745; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px; }
+        .task-date { color: #999; font-size: 14px; margin-top: 10px; }
+        .add-btn { background-color: #854fe8; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px; margin-top: 10px; }
+        .stats { display: flex; gap: 20px; margin-bottom: 20px; }
+        .stat-box { background-color: white; padding: 20px; border-radius: 5px; text-align: center; flex: 1; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .stat-number { font-size: 24px; font-weight: bold; color: #e8854f; }
     </style>
 </head>
 <body>
@@ -187,8 +66,8 @@
             <h1>TaskTart</h1>
             <div class="nav-links d-flex align-items-center">
                 <a href="dashboard.php">Dashboard</a>
-                <a href="">Tareas</a>
-                <a href="">Perfil</a>
+                <a href="tareas.php">Tareas</a>
+                <a href="perfil.php">Perfil</a>
                 <a href="logout.php">Cerrar sesión</a>
                 <button class="dark-mode-btn" onclick="toggleDarkMode()">🌙/☀️</button>
             </div>
@@ -199,113 +78,235 @@
         <div class="container">
             <h2>Dashboard de Tareas</h2>
             
+            <!-- Estadísticas -->
             <div class="stats">
-                <div class="stat-box">
-                    <div class="stat-number">8</div>
-                    <div>Total tareas</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-number">3</div>
-                    <div>Pendientes</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-number">2</div>
-                    <div>En progreso</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-number">3</div>
-                    <div>Completadas</div>
-                </div>
+                <div class="stat-box"><div class="stat-number"><?= $total ?></div><div>Total tareas</div></div>
+                <div class="stat-box"><div class="stat-number"><?= $conteo['Pendiente'] ?></div><div>Pendientes</div></div>
+                <div class="stat-box"><div class="stat-number"><?= $conteo['En progreso'] ?></div><div>En progreso</div></div>
+                <div class="stat-box"><div class="stat-number"><?= $conteo['Completada'] ?></div><div>Completadas</div></div>
             </div>
 
+            <!-- Columnas de tareas -->
             <div class="task-columns">
+                <!-- Pendientes -->
                 <div class="task-column">
                     <div class="column-title">Pendientes</div>
-                    
-                    <div class="task-card">
-                        <div class="task-title">Diseñar interfaz</div>
-                        <div class="task-description">Hacer los mockups para la app</div>
-                        <span class="priority-high">Alta</span>
-                        <div class="task-date">Fecha: 28/09/2025</div>
-                    </div>
-
-                    <div class="task-card">
-                        <div class="task-title">Revisar documentación</div>
-                        <div class="task-description">Actualizar docs del proyecto</div>
-                        <span class="priority-medium">Media</span>
-                        <div class="task-date">Fecha: 30/09/2025</div>
-                    </div>
-
-                    <div class="task-card">
-                        <div class="task-title">Planificar sprint</div>
-                        <div class="task-description">Organizar tareas siguientes</div>
-                        <span class="priority-low">Baja</span>
-                        <div class="task-date">Fecha: 02/10/2025</div>
-                    </div>
-
-                    <button class="add-btn" onclick="addTask()">+ Agregar tarea</button>
+                    <?php foreach($pendientes as $t): ?>
+                        <div class="task-card">
+                            <div class="task-title"><?= htmlspecialchars($t['titulo']) ?></div>
+                            <div class="task-description"><?= htmlspecialchars($t['descripcion']) ?></div>
+                            <small><strong>Asignado a:</strong> <?= $t['asignado'] ?? 'Sin asignar' ?></small><br>
+                            <span class="priority-<?= strtolower($t['prioridad']) ?>"><?= $t['prioridad'] ?></span>
+                            <div class="task-date">Fecha: <?= $t['fecha_limite'] ?></div>
+                            <a href="#" class="btn btn-sm btn-warning mt-2" data-bs-toggle="modal" data-bs-target="#editarModal<?= $t['id_tarea'] ?>">Editar</a>
+                            <a href="tareas.php?delete=<?= $t['id_tarea'] ?>" class="btn btn-sm btn-danger mt-2" onclick="return confirm('¿Eliminar esta tarea?')">Eliminar</a>
+                        </div>
+                        <!-- Modal editar -->
+                        <div class="modal fade" id="editarModal<?= $t['id_tarea'] ?>" tabindex="-1">
+                          <div class="modal-dialog">
+                            <form method="POST" class="modal-content">
+                                <div class="modal-header"><h5 class="modal-title">Editar Tarea</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                <div class="modal-body">
+                                    <input type="hidden" name="accion" value="editar">
+                                    <input type="hidden" name="id_tarea" value="<?= $t['id_tarea'] ?>">
+                                    <div class="mb-3"><label>Título</label><input type="text" name="titulo" class="form-control" value="<?= htmlspecialchars($t['titulo']) ?>" required></div>
+                                    <div class="mb-3"><label>Descripción</label><textarea name="descripcion" class="form-control"><?= htmlspecialchars($t['descripcion']) ?></textarea></div>
+                                    <div class="mb-3">
+                                        <label>Estado</label>
+                                        <select name="estado" class="form-control">
+                                            <option <?= $t['estado']=='Pendiente'?'selected':'' ?>>Pendiente</option>
+                                            <option <?= $t['estado']=='En progreso'?'selected':'' ?>>En progreso</option>
+                                            <option <?= $t['estado']=='Completada'?'selected':'' ?>>Completada</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label>Prioridad</label>
+                                        <select name="prioridad" class="form-control">
+                                            <option <?= $t['prioridad']=='Alta'?'selected':'' ?>>Alta</option>
+                                            <option <?= $t['prioridad']=='Media'?'selected':'' ?>>Media</option>
+                                            <option <?= $t['prioridad']=='Baja'?'selected':'' ?>>Baja</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3"><label>Fecha límite</label><input type="date" name="fecha_limite" class="form-control" value="<?= $t['fecha_limite'] ?>"></div>
+                                    <div class="mb-3">
+                                        <label>Responsable</label>
+                                        <select name="id_asignado" class="form-control">
+                                            <option value="">-- Seleccionar --</option>
+                                            <?php foreach($usuarios as $u): ?>
+                                                <option value="<?= $u['id_usuario'] ?>" <?= $t['id_asignado']==$u['id_usuario']?'selected':'' ?>><?= htmlspecialchars($u['nombre']) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer"><button class="btn btn-primary">Guardar cambios</button></div>
+                            </form>
+                          </div>
+                        </div>
+                    <?php endforeach; ?>
+                    <button class="add-btn" data-bs-toggle="modal" data-bs-target="#agregarModal">+ Agregar tarea</button>
                 </div>
 
+                <!-- En progreso -->
                 <div class="task-column">
                     <div class="column-title">En progreso</div>
+                    <?php foreach($progreso as $t): ?>
+                        <div class="task-card">
+                            <div class="task-title"><?= htmlspecialchars($t['titulo']) ?></div>
+                            <div class="task-description"><?= htmlspecialchars($t['descripcion']) ?></div>
+                            <small><strong>Asignado a:</strong> <?= $t['asignado'] ?? 'Sin asignar' ?></small><br>
+                            <span class="priority-<?= strtolower($t['prioridad']) ?>"><?= $t['prioridad'] ?></span>
+                            <div class="task-date">Fecha: <?= $t['fecha_limite'] ?></div>
+                            <a href="#" class="btn btn-sm btn-warning mt-2" data-bs-toggle="modal" data-bs-target="#editarModal<?= $t['id_tarea'] ?>">Editar</a>
+                            <a href="tareas.php?delete=<?= $t['id_tarea'] ?>" class="btn btn-sm btn-danger mt-2" onclick="return confirm('¿Eliminar esta tarea?')">Eliminar</a>
+                        </div>
                     
-                    <div class="task-card">
-                        <div class="task-title">Desarrollar API</div>
-                        <div class="task-description">Hacer endpoints de usuarios</div>
-                        <span class="priority-high">Alta</span>
-                        <div class="task-date">Fecha: 26/09/2025</div>
-                    </div>
-
-                    <div class="task-card">
-                        <div class="task-title">Testing</div>
-                        <div class="task-description">Pruebas de los componentes</div>
-                        <span class="priority-medium">Media</span>
-                        <div class="task-date">Fecha: 29/09/2025</div>
-                    </div>
-
-                    <button class="add-btn" onclick="addTask()">+ Agregar tarea</button>
+                        <!-- Modal editar -->
+                        <div class="modal fade" id="editarModal<?= $t['id_tarea'] ?>" tabindex="-1">
+                          <div class="modal-dialog">
+                            <form method="POST" class="modal-content">
+                                <div class="modal-header"><h5 class="modal-title">Editar Tarea</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                <div class="modal-body">
+                                    <input type="hidden" name="accion" value="editar">
+                                    <input type="hidden" name="id_tarea" value="<?= $t['id_tarea'] ?>">
+                                    <div class="mb-3"><label>Título</label><input type="text" name="titulo" class="form-control" value="<?= htmlspecialchars($t['titulo']) ?>" required></div>
+                                    <div class="mb-3"><label>Descripción</label><textarea name="descripcion" class="form-control"><?= htmlspecialchars($t['descripcion']) ?></textarea></div>
+                                    <div class="mb-3">
+                                        <label>Estado</label>
+                                        <select name="estado" class="form-control">
+                                            <option <?= $t['estado']=='Pendiente'?'selected':'' ?>>Pendiente</option>
+                                            <option <?= $t['estado']=='En progreso'?'selected':'' ?>>En progreso</option>
+                                            <option <?= $t['estado']=='Completada'?'selected':'' ?>>Completada</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label>Prioridad</label>
+                                        <select name="prioridad" class="form-control">
+                                            <option <?= $t['prioridad']=='Alta'?'selected':'' ?>>Alta</option>
+                                            <option <?= $t['prioridad']=='Media'?'selected':'' ?>>Media</option>
+                                            <option <?= $t['prioridad']=='Baja'?'selected':'' ?>>Baja</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3"><label>Fecha límite</label><input type="date" name="fecha_limite" class="form-control" value="<?= $t['fecha_limite'] ?>"></div>
+                                    <div class="mb-3">
+                                        <label>Responsable</label>
+                                        <select name="id_asignado" class="form-control">
+                                            <option value="">-- Seleccionar --</option>
+                                            <?php foreach($usuarios as $u): ?>
+                                                <option value="<?= $u['id_usuario'] ?>" <?= $t['id_asignado']==$u['id_usuario']?'selected':'' ?>><?= htmlspecialchars($u['nombre']) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer"><button class="btn btn-primary">Guardar cambios</button></div>
+                            </form>
+                          </div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
-
+                                            
+                <!-- Completadas -->
                 <div class="task-column">
                     <div class="column-title">Completadas</div>
+                    <?php foreach($completadas as $t): ?>
+                        <div class="task-card">
+                            <div class="task-title"><?= htmlspecialchars($t['titulo']) ?></div>
+                            <div class="task-description"><?= htmlspecialchars($t['descripcion']) ?></div>
+                            <small><strong>Asignado a:</strong> <?= $t['asignado'] ?? 'Sin asignar' ?></small><br>
+                            <span class="priority-<?= strtolower($t['prioridad']) ?>"><?= $t['prioridad'] ?></span>
+                            <div class="task-date">Fecha: <?= $t['fecha_limite'] ?></div>
+                            <a href="#" class="btn btn-sm btn-warning mt-2" data-bs-toggle="modal" data-bs-target="#editarModal<?= $t['id_tarea'] ?>">Editar</a>
+                            <a href="tareas.php?delete=<?= $t['id_tarea'] ?>" class="btn btn-sm btn-danger mt-2" onclick="return confirm('¿Eliminar esta tarea?')">Eliminar</a>
+                        </div>
                     
-                    <div class="task-card">
-                        <div class="task-title">Configurar BD</div>
-                        <div class="task-description">Setup inicial de database</div>
-                        <span class="priority-high">Alta</span>
-                        <div class="task-date">Fecha: 20/09/2025</div>
-                    </div>
+                        <!-- Modal editar -->
+                        <div class="modal fade" id="editarModal<?= $t['id_tarea'] ?>" tabindex="-1">
+                          <div class="modal-dialog">
+                            <form method="POST" class="modal-content">
+                                <div class="modal-header"><h5 class="modal-title">Editar Tarea</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                <div class="modal-body">
+                                    <input type="hidden" name="accion" value="editar">
+                                    <input type="hidden" name="id_tarea" value="<?= $t['id_tarea'] ?>">
+                                    <div class="mb-3"><label>Título</label><input type="text" name="titulo" class="form-control" value="<?= htmlspecialchars($t['titulo']) ?>" required></div>
+                                    <div class="mb-3"><label>Descripción</label><textarea name="descripcion" class="form-control"><?= htmlspecialchars($t['descripcion']) ?></textarea></div>
+                                    <div class="mb-3">
+                                        <label>Estado</label>
+                                        <select name="estado" class="form-control">
+                                            <option <?= $t['estado']=='Pendiente'?'selected':'' ?>>Pendiente</option>
+                                            <option <?= $t['estado']=='En progreso'?'selected':'' ?>>En progreso</option>
+                                            <option <?= $t['estado']=='Completada'?'selected':'' ?>>Completada</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label>Prioridad</label>
+                                        <select name="prioridad" class="form-control">
+                                            <option <?= $t['prioridad']=='Alta'?'selected':'' ?>>Alta</option>
+                                            <option <?= $t['prioridad']=='Media'?'selected':'' ?>>Media</option>
+                                            <option <?= $t['prioridad']=='Baja'?'selected':'' ?>>Baja</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3"><label>Fecha límite</label><input type="date" name="fecha_limite" class="form-control" value="<?= $t['fecha_limite'] ?>"></div>
+                                    <div class="mb-3">
+                                        <label>Responsable</label>
+                                        <select name="id_asignado" class="form-control">
+                                            <option value="">-- Seleccionar --</option>
+                                            <?php foreach($usuarios as $u): ?>
+                                                <option value="<?= $u['id_usuario'] ?>" <?= $t['id_asignado']==$u['id_usuario']?'selected':'' ?>><?= htmlspecialchars($u['nombre']) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer"><button class="btn btn-primary">Guardar cambios</button></div>
+                            </form>
+                          </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
 
-                    <div class="task-card">
-                        <div class="task-title">Investigar tecnologías</div>
-                        <div class="task-description">Ver qué framework usar</div>
-                        <span class="priority-medium">Media</span>
-                        <div class="task-date">Fecha: 22/09/2025</div>
-                    </div>
 
-                    <div class="task-card">
-                        <div class="task-title">Setup entorno</div>
-                        <div class="task-description">Instalar herramientas</div>
-                        <span class="priority-low">Baja</span>
-                        <div class="task-date">Fecha: 25/09/2025</div>
-                    </div>
-
-                    <button class="add-btn" onclick="addTask()">+ Agregar tarea</button>
+    <!-- Modal agregar tarea -->
+    <div class="modal fade" id="agregarModal" tabindex="-1">
+      <div class="modal-dialog">
+        <form method="POST" class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Nueva Tarea</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <input type="hidden" name="accion" value="crear">
+                <div class="mb-3"><label>Título</label><input type="text" name="titulo" class="form-control" required></div>
+                <div class="mb-3"><label>Descripción</label><textarea name="descripcion" class="form-control"></textarea></div>
+                <div class="mb-3"><label>Estado</label>
+                    <select name="estado" class="form-control">
+                        <option>Pendiente</option>
+                        <option>En progreso</option>
+                        <option>Completada</option>
+                    </select>
+                </div>
+                <div class="mb-3"><label>Prioridad</label>
+                    <select name="prioridad" class="form-control">
+                        <option>Alta</option>
+                        <option>Media</option>
+                        <option>Baja</option>
+                    </select>
+                </div>
+                <div class="mb-3"><label>Fecha límite</label><input type="date" name="fecha_limite" class="form-control"></div>
+                <div class="mb-3">
+                    <label>Responsable</label>
+                    <select name="id_asignado" class="form-control">
+                        <option value="">-- Seleccionar --</option>
+                        <?php foreach($usuarios as $u): ?>
+                            <option value="<?= $u['id_usuario'] ?>"><?= htmlspecialchars($u['nombre']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
             </div>
-        </div>
+            <div class="modal-footer"><button class="btn btn-success">Guardar</button></div>
+        </form>
+      </div>
     </div>
 
     <script>
         function toggleDarkMode() {
             document.body.classList.toggle('dark-mode');
         }
-
-        function addTask() {
-            alert('Aquí iría el código para agregar una nueva tarea');
-        }
     </script>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
