@@ -57,6 +57,17 @@ CREATE TABLE historial_tareas (
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE SET NULL
 );
 
+INSERT INTO roles (nombre_rol, descripcion)
+VALUES
+('Administrador', 'Control total del sistema: gestión de usuarios, proyectos y tareas.'),
+('Project Manager', 'Crea y administra proyectos, asigna tareas y supervisa el progreso.'),
+('Team Leader', 'Lidera un equipo dentro de un proyecto, distribuye tareas y supervisa colaboradores.'),
+('Colaborador', 'Ejecuta tareas asignadas, actualiza estados y colabora en los proyectos.'),
+('Cliente', 'Acceso limitado, solo visualiza el avance del proyecto.'),
+('Invitado', 'Acceso mínimo, generalmente de solo lectura.');
+
+INSERT INTO usuario_rol (id_usuario, id_rol, activo)
+VALUES (1, 1, TRUE);
 
 -- MÓDULO TRANSACCIONAL (NUEVAS TABLAS)
 
@@ -76,3 +87,10 @@ CREATE TABLE pagos (
     estado VARCHAR(20) DEFAULT 'Pendiente', -- Pendiente, Completado, Fallido
     referencia VARCHAR(100) -- simulación de un ID de transacción
 );
+
+INSERT INTO planes (nombre, descripcion, precio, duracion_dias) VALUES
+('Gratis', 'Plan básico con acceso limitado. Hasta 1 proyecto y 5 tareas activas.', 0.00, 30),
+('Starter', 'Ideal para usuarios individuales. Hasta 5 proyectos y 50 tareas activas.', 4.99, 30),
+('Pro', 'Pensado para equipos pequeños. Hasta 20 proyectos, usuarios ilimitados y 500 tareas activas.', 14.99, 30),
+('Business', 'Para empresas. Proyectos ilimitados, integración avanzada y soporte prioritario.', 29.99, 30),
+('Anual Pro', 'Mismo que el plan Pro, pero con descuento por pago anual.', 149.99, 365);

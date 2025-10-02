@@ -13,14 +13,27 @@ $controller = new TareaController();
 $usuarioModel = new User();
 $usuarios = $usuarioModel->obtenerUsuariosConRoles();
 
-// Procesar acciones
+// === Roles y permisos ===
+$usuario = $_SESSION['usuario'];
+$rolUsuario = $usuarioModel->obtenerRolUsuario($usuario['id_usuario']);
+
+$permisos = [
+    "Administrador"    => ["crear", "editar", "eliminar"],
+    "Project Manager"  => ["crear", "editar", "eliminar"],
+    "Team Leader"      => ["crear", "editar"],
+    "Colaborador"      => ["editar"],
+    "Cliente"          => [],
+    "Invitado"         => []
+];
+
+// Procesar acciones (con verificación de permisos)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['accion']) && $_POST['accion'] === 'crear') {
+    if (isset($_POST['accion']) && $_POST['accion'] === 'crear' && in_array("crear", $permisos[$rolUsuario])) {
         $controller->store();
-    } elseif (isset($_POST['accion']) && $_POST['accion'] === 'editar' && isset($_POST['id_tarea'])) {
+    } elseif (isset($_POST['accion']) && $_POST['accion'] === 'editar' && isset($_POST['id_tarea']) && in_array("editar", $permisos[$rolUsuario])) {
         $controller->update($_POST['id_tarea']);
     }
-} elseif (isset($_GET['delete'])) {
+} elseif (isset($_GET['delete']) && in_array("eliminar", $permisos[$rolUsuario])) {
     $controller->delete($_GET['delete']);
 }
 
@@ -98,10 +111,18 @@ $total = $conteo['Pendiente'] + $conteo['En progreso'] + $conteo['Completada'];
                             <small><strong>Asignado a:</strong> <?= $t['asignado'] ?? 'Sin asignar' ?></small><br>
                             <span class="priority-<?= strtolower($t['prioridad']) ?>"><?= $t['prioridad'] ?></span>
                             <div class="task-date">Fecha: <?= $t['fecha_limite'] ?></div>
-                            <a href="#" class="btn btn-sm btn-warning mt-2" data-bs-toggle="modal" data-bs-target="#editarModal<?= $t['id_tarea'] ?>">Editar</a>
-                            <a href="tareas.php?delete=<?= $t['id_tarea'] ?>" class="btn btn-sm btn-danger mt-2" onclick="return confirm('¿Eliminar esta tarea?')">Eliminar</a>
+
+                            <?php if (in_array("editar", $permisos[$rolUsuario])): ?>
+                                <a href="#" class="btn btn-sm btn-warning mt-2" data-bs-toggle="modal" data-bs-target="#editarModal<?= $t['id_tarea'] ?>">Editar</a>
+                            <?php endif; ?>
+
+                            <?php if (in_array("eliminar", $permisos[$rolUsuario])): ?>
+                                <a href="tareas.php?delete=<?= $t['id_tarea'] ?>" class="btn btn-sm btn-danger mt-2" onclick="return confirm('¿Eliminar esta tarea?')">Eliminar</a>
+                            <?php endif; ?>
                         </div>
+
                         <!-- Modal editar -->
+                        <?php if (in_array("editar", $permisos[$rolUsuario])): ?>
                         <div class="modal fade" id="editarModal<?= $t['id_tarea'] ?>" tabindex="-1">
                           <div class="modal-dialog">
                             <form method="POST" class="modal-content">
@@ -142,8 +163,12 @@ $total = $conteo['Pendiente'] + $conteo['En progreso'] + $conteo['Completada'];
                             </form>
                           </div>
                         </div>
+                        <?php endif; ?>
                     <?php endforeach; ?>
-                    <button class="add-btn" data-bs-toggle="modal" data-bs-target="#agregarModal">+ Agregar tarea</button>
+
+                    <?php if (in_array("crear", $permisos[$rolUsuario])): ?>
+                        <button class="add-btn" data-bs-toggle="modal" data-bs-target="#agregarModal">+ Agregar tarea</button>
+                    <?php endif; ?>
                 </div>
 
                 <!-- En progreso -->
@@ -156,10 +181,17 @@ $total = $conteo['Pendiente'] + $conteo['En progreso'] + $conteo['Completada'];
                             <small><strong>Asignado a:</strong> <?= $t['asignado'] ?? 'Sin asignar' ?></small><br>
                             <span class="priority-<?= strtolower($t['prioridad']) ?>"><?= $t['prioridad'] ?></span>
                             <div class="task-date">Fecha: <?= $t['fecha_limite'] ?></div>
-                            <a href="#" class="btn btn-sm btn-warning mt-2" data-bs-toggle="modal" data-bs-target="#editarModal<?= $t['id_tarea'] ?>">Editar</a>
-                            <a href="tareas.php?delete=<?= $t['id_tarea'] ?>" class="btn btn-sm btn-danger mt-2" onclick="return confirm('¿Eliminar esta tarea?')">Eliminar</a>
+
+                            <?php if (in_array("editar", $permisos[$rolUsuario])): ?>
+                                <a href="#" class="btn btn-sm btn-warning mt-2" data-bs-toggle="modal" data-bs-target="#editarModal<?= $t['id_tarea'] ?>">Editar</a>
+                            <?php endif; ?>
+
+                            <?php if (in_array("eliminar", $permisos[$rolUsuario])): ?>
+                                <a href="tareas.php?delete=<?= $t['id_tarea'] ?>" class="btn btn-sm btn-danger mt-2" onclick="return confirm('¿Eliminar esta tarea?')">Eliminar</a>
+                            <?php endif; ?>
                         </div>
-                    
+
+                        <?php if (in_array("editar", $permisos[$rolUsuario])): ?>
                         <!-- Modal editar -->
                         <div class="modal fade" id="editarModal<?= $t['id_tarea'] ?>" tabindex="-1">
                           <div class="modal-dialog">
@@ -201,6 +233,7 @@ $total = $conteo['Pendiente'] + $conteo['En progreso'] + $conteo['Completada'];
                             </form>
                           </div>
                         </div>
+                        <?php endif; ?>
                     <?php endforeach; ?>
                 </div>
                                             
@@ -214,10 +247,17 @@ $total = $conteo['Pendiente'] + $conteo['En progreso'] + $conteo['Completada'];
                             <small><strong>Asignado a:</strong> <?= $t['asignado'] ?? 'Sin asignar' ?></small><br>
                             <span class="priority-<?= strtolower($t['prioridad']) ?>"><?= $t['prioridad'] ?></span>
                             <div class="task-date">Fecha: <?= $t['fecha_limite'] ?></div>
-                            <a href="#" class="btn btn-sm btn-warning mt-2" data-bs-toggle="modal" data-bs-target="#editarModal<?= $t['id_tarea'] ?>">Editar</a>
-                            <a href="tareas.php?delete=<?= $t['id_tarea'] ?>" class="btn btn-sm btn-danger mt-2" onclick="return confirm('¿Eliminar esta tarea?')">Eliminar</a>
+
+                            <?php if (in_array("editar", $permisos[$rolUsuario])): ?>
+                                <a href="#" class="btn btn-sm btn-warning mt-2" data-bs-toggle="modal" data-bs-target="#editarModal<?= $t['id_tarea'] ?>">Editar</a>
+                            <?php endif; ?>
+
+                            <?php if (in_array("eliminar", $permisos[$rolUsuario])): ?>
+                                <a href="tareas.php?delete=<?= $t['id_tarea'] ?>" class="btn btn-sm btn-danger mt-2" onclick="return confirm('¿Eliminar esta tarea?')">Eliminar</a>
+                            <?php endif; ?>
                         </div>
                     
+                        <?php if (in_array("editar", $permisos[$rolUsuario])): ?>
                         <!-- Modal editar -->
                         <div class="modal fade" id="editarModal<?= $t['id_tarea'] ?>" tabindex="-1">
                           <div class="modal-dialog">
@@ -259,11 +299,12 @@ $total = $conteo['Pendiente'] + $conteo['En progreso'] + $conteo['Completada'];
                             </form>
                           </div>
                         </div>
+                        <?php endif; ?>
                     <?php endforeach; ?>
                 </div>
 
-
     <!-- Modal agregar tarea -->
+    <?php if (in_array("crear", $permisos[$rolUsuario])): ?>
     <div class="modal fade" id="agregarModal" tabindex="-1">
       <div class="modal-dialog">
         <form method="POST" class="modal-content">
@@ -301,6 +342,7 @@ $total = $conteo['Pendiente'] + $conteo['En progreso'] + $conteo['Completada'];
         </form>
       </div>
     </div>
+    <?php endif; ?>
 
     <script>
         function toggleDarkMode() {
