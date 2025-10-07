@@ -37,10 +37,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $controller->delete($_GET['delete']);
 }
 
-$conteo = $controller->modelo->contarTareas();
-$pendientes = $controller->modelo->obtenerPorEstado("Pendiente");
-$progreso   = $controller->modelo->obtenerPorEstado("En progreso");
-$completadas= $controller->modelo->obtenerPorEstado("Completada");
+require_once __DIR__ . '/models/Proyecto.php';
+$proyectoModel = new Proyecto();
+
+// Proyectos en los que el usuario está o que creó
+$proyectosUsuario = array_merge(
+    $proyectoModel->obtenerProyectosCreados($usuario['id_usuario']),
+    $proyectoModel->obtenerProyectosUnidos($usuario['id_usuario'])
+);
+
+// Proyecto seleccionado
+$idProyectoSeleccionado = $_GET['proyecto'] ?? ($proyectosUsuario[0]['id_proyecto'] ?? null);
+$idProyectoSeleccionadoURL = $_GET['proyecto'] ?? null;
+
+// Modificar consultas de tareas para filtrar por proyecto
+$conteo = $controller->modelo->contarTareas($idProyectoSeleccionado);
+$pendientes = $controller->modelo->obtenerPorEstado("Pendiente", $idProyectoSeleccionado);
+$progreso   = $controller->modelo->obtenerPorEstado("En progreso", $idProyectoSeleccionado);
+$completadas= $controller->modelo->obtenerPorEstado("Completada", $idProyectoSeleccionado);
+
 $total = $conteo['Pendiente'] + $conteo['En progreso'] + $conteo['Completada'];
 ?>
 <!DOCTYPE html>
@@ -90,6 +105,19 @@ $total = $conteo['Pendiente'] + $conteo['En progreso'] + $conteo['Completada'];
     <div class="main-content">
         <div class="container">
             <h2>Dashboard de Tareas</h2>
+            <form method="GET" class="mb-3">
+                <div class="input-group" style="max-width: 400px;">
+                    <label class="input-group-text bg-primary text-white">Proyecto</label>
+                    <select name="proyecto" class="form-select" onchange="this.form.submit()">
+                        <?php foreach($proyectosUsuario as $proy): ?>
+                            <option value="<?= $proy['id_proyecto']; ?>" <?= ($proy['id_proyecto'] == $idProyectoSeleccionado) ? 'selected' : ''; ?>>
+                                <?= htmlspecialchars($proy['nombre']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </form>
+
             
             <!-- Estadísticas -->
             <div class="stats">
@@ -337,6 +365,7 @@ $total = $conteo['Pendiente'] + $conteo['En progreso'] + $conteo['Completada'];
                         <?php endforeach; ?>
                     </select>
                 </div>
+                <input type="hidden" name="id_proyecto" value="<?= htmlspecialchars($idProyectoSeleccionadoURL) ?>">
             </div>
             <div class="modal-footer"><button class="btn btn-success">Guardar</button></div>
         </form>

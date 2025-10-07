@@ -17,20 +17,19 @@ class TareaController {
         include __DIR__ . '/../views/tareas/dashboard.php';
     }
 
-    public function store() {
-        if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            $this->modelo->crear(
-                $_POST['titulo'],
-                $_POST['descripcion'],
-                $_POST['estado'],
-                $_POST['prioridad'],
-                $_POST['fecha_limite'],
-                $_POST['id_proyecto'],
-                $_POST['id_asignado']
-            );
-            header("Location: tareas.php");
-        }
-    }
+public function store() {
+    $titulo = $_POST['titulo'];
+    $descripcion = $_POST['descripcion'];
+    $estado = $_POST['estado'];
+    $prioridad = $_POST['prioridad'];
+    $fecha_limite = $_POST['fecha_limite'];
+    $id_asignado = $_POST['id_asignado'] ?: null;
+    $id_proyecto = $_POST['id_proyecto'] ?? null;
+
+    $this->modelo->crear($titulo, $descripcion, $estado, $prioridad, $fecha_limite, $id_asignado, $id_proyecto);
+    header("Location: tareas.php?proyecto=$id_proyecto");
+}
+
 
     public function update($id_tarea) {
         if ($_SERVER["REQUEST_METHOD"] === "POST") {

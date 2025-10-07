@@ -206,28 +206,40 @@ class User {
         }
     }
 
-public function obtenerRolUsuario(int $id_usuario): ?string {
-    $sql = "SELECT r.nombre_rol 
-            FROM usuario_rol ur 
-            INNER JOIN roles r ON ur.id_rol = r.id_rol
-            WHERE ur.id_usuario = ? AND ur.activo = 1
-            LIMIT 1";
-    $stmt = $this->conn->prepare($sql);
-    if (!$stmt) {
-        error_log("Error preparando obtenerRolUsuario: " . $this->conn->error);
+    public function obtenerRolUsuario(int $id_usuario): ?string {
+        $sql = "SELECT r.nombre_rol 
+                FROM usuario_rol ur 
+                INNER JOIN roles r ON ur.id_rol = r.id_rol
+                WHERE ur.id_usuario = ? AND ur.activo = 1
+                LIMIT 1";
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            error_log("Error preparando obtenerRolUsuario: " . $this->conn->error);
+            return null;
+        }
+
+        $stmt->bind_param("i", $id_usuario);
+        $stmt->execute();
+        $res = $stmt->get_result();
+
+        if ($res && $row = $res->fetch_assoc()) {
+            return $row['nombre_rol'];
+        }
+
         return null;
     }
 
-    $stmt->bind_param("i", $id_usuario);
-    $stmt->execute();
-    $res = $stmt->get_result();
-
-    if ($res && $row = $res->fetch_assoc()) {
-        return $row['nombre_rol'];
+    public function obtenerPlanActivo() {
+        $sql = "SELECT p.nombre 
+                FROM pagos pg
+                INNER JOIN planes p ON pg.id_plan = p.id_plan
+                WHERE pg.estado = 'Completado'
+                ORDER BY pg.fecha_pago DESC
+                LIMIT 1";
+        $stmt = $this->conn->query($sql);
+        return $stmt->fetch_assoc()['nombre'] ?? 'Gratis';
     }
 
-    return null;
-}
 
 
 }

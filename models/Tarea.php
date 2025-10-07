@@ -21,33 +21,37 @@ class Tarea {
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
-    // Obtener tareas por estado con nombre del asignado y proyecto
-    public function obtenerPorEstado($estado) {
-        $sql = "SELECT t.*, u.nombre AS asignado, p.nombre AS proyecto
-                FROM tareas t
-                LEFT JOIN usuarios u ON t.id_asignado = u.id_usuario
-                LEFT JOIN proyectos p ON t.id_proyecto = p.id_proyecto
-                WHERE t.estado = ?
-                ORDER BY t.fecha_limite ASC";
+public function contarTareas($id_proyecto = null) {
+    $sql = "SELECT 
+                SUM(estado='Pendiente') AS Pendiente,
+                SUM(estado='En progreso') AS `En progreso`,
+                SUM(estado='Completada') AS Completada
+            FROM tareas";
+    if ($id_proyecto) {
+        $sql .= " WHERE id_proyecto = ?";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("s", $estado);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        return $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->bind_param("i", $id_proyecto);
+    } else {
+        $stmt = $this->conn->prepare($sql);
     }
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+    return $result ?: ['Pendiente'=>0,'En progreso'=>0,'Completada'=>0];
+}
 
+public function obtenerPorEstado($estado, $id_proyecto = null) {
+    $sql = "SELECT t.*, u.nombre AS asignado 
+            FROM tareas t 
+            LEFT JOIN usuarios u ON t.id_asignado = u.id_usuario
+            WHERE t.estado = ?";
+    if ($id_proyecto) $sql .= " AND t.id_proyecto = ?";
+    $stmt = $this->conn->prepare($sql);
+    if ($id_proyecto) $stmt->bind_param("si", $estado, $id_proyecto);
+    else $stmt->bind_param("s", $estado);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
 
-    // Contadores
-    public function contarTareas() {
-        $sql = "SELECT estado, COUNT(*) as total FROM tareas GROUP BY estado";
-        $result = $this->conn->query($sql);
-
-        $conteo = ["Pendiente" => 0, "En progreso" => 0, "Completada" => 0];
-        while ($row = $result->fetch_assoc()) {
-            $conteo[$row['estado']] = $row['total'];
-        }
-        return $conteo;
-    }
 
     // Crear tarea
     public function crear($titulo, $descripcion, $estado, $prioridad, $fecha_limite, $id_proyecto, $id_asignado) {
