@@ -25,6 +25,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     $fecha_fin = $_POST['fecha_fin'] ?? null;
 
     if (!empty($nombre)) {
+    // 🔹 Obtener plan y límite
+    $planUsuario = $usuarioModel->obtenerPlanUsuario($user['id_usuario']); 
+    $limite = $planUsuario['limite_proyectos'] ?? 1; // Por defecto 1 si no tiene plan
+
+    // 🔹 Contar proyectos existentes
+    $totalProyectos = $proyectoModel->contarProyectosUsuario($user['id_usuario']);
+
+    // 🔹 Validar límite
+    if ($limite != 0 && $totalProyectos >= $limite) {
+        $msg = "Has alcanzado el límite de proyectos de tu plan actual.";
+    } else {
         $stmt = $proyectoModel->crearProyecto($user['id_usuario'], $nombre, $descripcion, $fecha_inicio, $fecha_fin);
         if ($stmt) {
             header("Location: dashboard.php?msg=Proyecto creado con éxito");
@@ -32,9 +43,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
         } else {
             $msg = "Error al crear el proyecto.";
         }
-    } else {
-        $msg = "El nombre del proyecto es obligatorio.";
     }
+} else {
+    $msg = "El nombre del proyecto es obligatorio.";
+}
+
 }
 
 // Proyectos propios y de otros usuarios

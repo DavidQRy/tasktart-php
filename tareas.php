@@ -50,6 +50,17 @@ $proyectosUsuario = array_merge(
 $idProyectoSeleccionado = $_GET['proyecto'] ?? ($proyectosUsuario[0]['id_proyecto'] ?? null);
 $idProyectoSeleccionadoURL = $_GET['proyecto'] ?? null;
 
+// Proyecto seleccionado
+$idProyectoSeleccionado = $_GET['proyecto'] ?? ($proyectosUsuario[0]['id_proyecto'] ?? null);
+$idProyectoSeleccionadoURL = $_GET['proyecto'] ?? null;
+
+// === Roles y permisos ===
+$rolUsuario = $usuarioModel->obtenerRolUsuarioProyecto($usuario['id_usuario'], $idProyectoSeleccionado);
+
+// Usuarios asignables (solo del proyecto actual)
+$usuarios = $usuarioModel->obtenerUsuariosPorProyecto($idProyectoSeleccionado);
+
+
 // Modificar consultas de tareas para filtrar por proyecto
 $conteo = $controller->modelo->contarTareas($idProyectoSeleccionado);
 $pendientes = $controller->modelo->obtenerPorEstado("Pendiente", $idProyectoSeleccionado);

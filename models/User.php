@@ -240,6 +240,39 @@ class User {
         return $stmt->fetch_assoc()['nombre'] ?? 'Gratis';
     }
 
+    public function obtenerUsuariosPorProyecto($id_proyecto) {
+    $sql = "SELECT u.id_usuario, u.nombre, up.rol_en_proyecto 
+            FROM usuario_proyecto up
+            INNER JOIN usuarios u ON u.id_usuario = up.id_usuario
+            WHERE up.id_proyecto = ?";
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bind_param("i", $id_proyecto);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
+
+public function obtenerRolUsuarioProyecto($id_usuario, $id_proyecto) {
+    $sql = "SELECT rol_en_proyecto FROM usuario_proyecto 
+            WHERE id_usuario = ? AND id_proyecto = ? LIMIT 1";
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bind_param("ii", $id_usuario, $id_proyecto);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+    return $result ? $result['rol_en_proyecto'] : 'Invitado';
+}
+
+public function obtenerPlanUsuario($id_usuario) {
+    $sql = "SELECT p.nombre AS plan_nombre, p.limite_proyectos 
+            FROM pagos pa
+            INNER JOIN planes p ON pa.id_plan = p.id_plan
+            WHERE pa.id_usuario = ? 
+            ORDER BY pa.fecha_pago DESC LIMIT 1";
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bind_param("i", $id_usuario);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+    return $result ?? ['plan_nombre' => 'Gratis', 'limite_proyectos' => 1];
+}
 
 
 }

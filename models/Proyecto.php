@@ -91,10 +91,30 @@ class Proyecto {
     $stmt = $this->conn->prepare($sql);
     if ($stmt) {
         $stmt->bind_param("issss", $id_creador, $nombre, $descripcion, $fecha_inicio, $fecha_fin);
-        return $stmt->execute();
+            if ($stmt->execute()) {
+        $id_proyecto = $this->conn->insert_id;
+
+        // Insertar automáticamente al creador como Project Manager
+        $sql2 = "INSERT INTO usuario_proyecto (id_usuario, id_proyecto, rol_en_proyecto)
+                 VALUES (?, ?, 'Project Manager')";
+        $stmt2 = $this->conn->prepare($sql2);
+        $stmt2->bind_param("ii", $id_creador, $id_proyecto);
+        $stmt2->execute();
+
+        return true;
+    }
     }
     return false;
 }
+public function contarProyectosUsuario($id_usuario) {
+    $sql = "SELECT COUNT(*) AS total FROM proyectos WHERE id_creador = ?";
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bind_param("i", $id_usuario);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+    return $result['total'] ?? 0;
+}
+
 
 }
 ?>

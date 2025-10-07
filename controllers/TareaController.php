@@ -26,9 +26,11 @@ public function store() {
     $id_asignado = $_POST['id_asignado'] ?: null;
     $id_proyecto = $_POST['id_proyecto'] ?? null;
 
-    $this->modelo->crear($titulo, $descripcion, $estado, $prioridad, $fecha_limite, $id_asignado, $id_proyecto);
+    // ✅ Orden correcto de los parámetros
+    $this->modelo->crear($titulo, $descripcion, $estado, $prioridad, $fecha_limite, $id_proyecto, $id_asignado);
     header("Location: tareas.php?proyecto=$id_proyecto");
 }
+
 
 
     public function update($id_tarea) {
