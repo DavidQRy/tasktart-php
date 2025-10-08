@@ -17,6 +17,12 @@ $usuarios = $usuarioModel->obtenerUsuariosConRoles();
 $usuario = $_SESSION['usuario'];
 $rolUsuario = $usuarioModel->obtenerRolUsuario($usuario['id_usuario']);
 
+// Si no tiene rol definido o no existe en los permisos, se asigna "Invitado"
+if (empty($rolUsuario) || !isset($permisos[$rolUsuario])) {
+    $rolUsuario = "Invitado";
+}
+
+
 $permisos = [
     "Administrador"    => ["crear", "editar", "eliminar"],
     "Project Manager"  => ["crear", "editar", "eliminar"],
@@ -28,7 +34,7 @@ $permisos = [
 
 // Procesar acciones (con verificación de permisos)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['accion']) && $_POST['accion'] === 'crear' && in_array("crear", $permisos[$rolUsuario])) {
+    if (isset($_POST['accion']) && $_POST['accion'] === 'crear') {
         $controller->store();
     } elseif (isset($_POST['accion']) && $_POST['accion'] === 'editar' && isset($_POST['id_tarea']) && in_array("editar", $permisos[$rolUsuario])) {
         $controller->update($_POST['id_tarea']);
@@ -52,7 +58,7 @@ $idProyectoSeleccionadoURL = $_GET['proyecto'] ?? null;
 
 // Proyecto seleccionado
 $idProyectoSeleccionado = $_GET['proyecto'] ?? ($proyectosUsuario[0]['id_proyecto'] ?? null);
-$idProyectoSeleccionadoURL = $_GET['proyecto'] ?? null;
+$idProyectoSeleccionadoURL = $_GET['proyecto'] ?? $idProyectoSeleccionado ?? null;
 
 // === Roles y permisos ===
 $rolUsuario = $usuarioModel->obtenerRolUsuarioProyecto($usuario['id_usuario'], $idProyectoSeleccionado);

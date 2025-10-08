@@ -18,18 +18,40 @@ class TareaController {
     }
 
 public function store() {
-    $titulo = $_POST['titulo'];
-    $descripcion = $_POST['descripcion'];
-    $estado = $_POST['estado'];
-    $prioridad = $_POST['prioridad'];
-    $fecha_limite = $_POST['fecha_limite'];
-    $id_asignado = $_POST['id_asignado'] ?: null;
-    $id_proyecto = $_POST['id_proyecto'] ?? null;
+    require_once __DIR__ . '/../models/User.php';
+    $usuarioModel = new User();
 
-    // ✅ Orden correcto de los parámetros
-    $this->modelo->crear($titulo, $descripcion, $estado, $prioridad, $fecha_limite, $id_proyecto, $id_asignado);
-    header("Location: tareas.php?proyecto=$id_proyecto");
+    $titulo = trim($_POST['titulo']);
+    $descripcion = trim($_POST['descripcion']);
+    $estado = $_POST['estado'] ?? 'Pendiente';
+    $prioridad = $_POST['prioridad'] ?? 'Media';
+    $fecha_limite = $_POST['fecha_limite'] ?? null;
+    $id_asignado = $_POST['id_asignado'] ?: null;
+    $id_proyecto = $_POST['id_proyecto'] ?: null;
+    $id_creador = $_SESSION['usuario']['id_usuario'];
+
+    if (empty($id_proyecto)) {
+        echo "<script>alert('Selecciona un proyecto antes de crear una tarea.'); window.history.back();</script>";
+        exit;
+    }
+
+    // 🔹 Validar plan del usuario
+    $plan = $usuarioModel->obtenerPlanUsuario($id_creador);
+    $limiteTareas = $plan['limite_tareas'] ?? 0; // 0 = ilimitadas
+    $tareasActuales = $this->modelo->contarTareasPorUsuario($id_creador);
+
+    if ($limiteTareas != 0 && $tareasActuales >= $limiteTareas) {
+        echo "<script>alert('Has alcanzado el límite de tareas de tu plan: {$plan['plan_nombre']}'); window.location.href='tareas.php';</script>";
+        exit;
+    }
+
+    // 🔹 Crear tarea
+    $this->modelo->crear($titulo, $descripcion, $estado, $prioridad, $fecha_limite, $id_proyecto, $id_asignado, $id_creador);
+
+    header("Location: tareas.php?msg=Tarea creada con éxito");
+    exit;
 }
+
 
 
 

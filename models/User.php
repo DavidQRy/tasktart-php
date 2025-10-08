@@ -262,7 +262,7 @@ public function obtenerRolUsuarioProyecto($id_usuario, $id_proyecto) {
 }
 
 public function obtenerPlanUsuario($id_usuario) {
-    $sql = "SELECT p.nombre AS plan_nombre, p.limite_proyectos 
+    $sql = "SELECT p.nombre AS plan_nombre, p.limite_proyectos, p.limite_tareas
             FROM pagos pa
             INNER JOIN planes p ON pa.id_plan = p.id_plan
             WHERE pa.id_usuario = ? 
@@ -271,8 +271,15 @@ public function obtenerPlanUsuario($id_usuario) {
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
     $result = $stmt->get_result()->fetch_assoc();
-    return $result ?? ['plan_nombre' => 'Gratis', 'limite_proyectos' => 1];
+
+    // Si no tiene plan, devolver plan básico por defecto
+    return $result ?? [
+        'plan_nombre' => 'Gratis',
+        'limite_proyectos' => 1,
+        'limite_tareas' => 5
+    ];
 }
+
 
 
 }

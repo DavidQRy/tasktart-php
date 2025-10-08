@@ -112,4 +112,17 @@ public function obtenerPorEstado($estado, $id_proyecto = null) {
         $stmt->bind_param("i", $id_tarea);
         return $stmt->execute();
     }
+    
+    public function contarTareasPorUsuario($id_usuario) {
+    $sql = "SELECT COUNT(*) AS total 
+            FROM tareas t
+            INNER JOIN proyectos p ON t.id_proyecto = p.id_proyecto
+            WHERE p.id_creador = ?";
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bind_param("i", $id_usuario);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+    return $result['total'] ?? 0;
+}
+
 }
