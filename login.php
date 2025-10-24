@@ -1,13 +1,13 @@
 <?php
-require_once __DIR__.'/controllers/AuthController.php';
+   require_once __DIR__.'/controllers/AuthController.php';
 
-$auth = new AuthController();
-$message = "";
+   $auth = new AuthController();
+   $message = "";
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $user = $auth->login($_POST);
+   if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+     $user = $auth->login($_POST);
 
-    if ($user) {
+   if ($user) {
         // Redirigir al dashboard (ejemplo)
         header("Location: dashboard.php");
         exit;
@@ -31,46 +31,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
        <header class="header">
-         <h1>TaskTart</h1>
-        <nav class ="navBar">
-            <a href="">Inicio</a>
-            <a href="">¿Qué somos?</a>
-            <a href="">Contacto</a>
-            <a href="login.php">Iniciar sesión</a>
+        <h1>TaskTart</h1>
+        <nav class="navBar">
+            <a href="#home">Inicio</a>
+            <a href="#features">Servicios</a>
+            <a href="#about">Nosotros</a>
+            <a href="#contact">Contacto</a>
+            <a href="login.php" style="background-color: white; color:black;">Iniciar sesión</a>
             <a href="register.php">Registrarse</a>
         </nav>
-        <button onclick="document.body.classList.toggle('dark-mode')">
-            🌙 / ☀️
-        </button>
+        <button class="dark-toggle" onclick="toggleDarkMode()" title="Cambiar tema">
+        🌙
+    </button>
     </header>
-     <div class="formRegistro">
 
+    <!-- Dark Mode Toggle -->
+      <script>
+        // Dark mode toggle function
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const darkToggle = document.querySelector('.dark-toggle');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                darkToggle.textContent = '☀️';
+            } else {
+                darkToggle.textContent = '🌙';
+            }
+        }
+      </script>
+
+<!--Formulario de registro Back y Front!-->
+
+<div class="formRegistro">
+   
 <?php if (!empty($message)) : ?>
-<script>
-  Swal.fire({
+
+ <script>
+    Swal.fire({
     title: "Aviso",
     text: "<?php echo htmlspecialchars($message); ?>",
     icon: "<?php echo strpos($message, '✅') !== false ? 'success' : 'error'; ?>"
-  });
-</script>
+    });
+ </script>
+
 <?php endif; ?>
 
+<form method="POST" action="">
 
-    <form method="POST" action="">
-        <h1>Bienvenido a TaskTart</h1>
-        <label class="dato">
-                <input type="email" name="correo" id="correo" required placeholder="Correo Electrónico">
-            </label>
+    <h1>Bienvenido a TaskTart</h1>
 
-        <label class="dato">
-                <input type="password" name="password" id="password" required placeholder="Contraseña (8 Digitos)">
-            </label>
+    <label class="dato">
+        <input type="email" name="correo" id="correo" required placeholder="Correo Electrónico">
+    </label>
 
-        <button type="submit">Ingresar</button>
+    <label class="dato">
+    <input type="password" name="password" id="password" required placeholder="Contraseña (8 Digitos)">
+    </label>
+
+    <button type="submit">Ingresar</button>
+
         <p>¿No tienes cuenta? <a href="register.php">Regístrate</a></p>
+    
     </form>
 
-
     </div>
+    
 </body>
 </html>

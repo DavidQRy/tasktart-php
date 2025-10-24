@@ -55,33 +55,54 @@ $proyectosPropios = $proyectoModel->obtenerProyectosCreados($user['id_usuario'])
 $proyectosUnidos = $proyectoModel->obtenerProyectosUnidos($user['id_usuario']);
 $proyectosDisponibles = $proyectoModel->obtenerProyectosDisponibles($user['id_usuario']);
 ?>
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Dashboard - TaskManager</title>
   <link rel="stylesheet" href="visual/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
-<header class="header">
-  <h1>TaskTart</h1>
-  <nav class="navBar">
-    <a href="dashboard.php">Dashboard</a>
-    <a href="tareas.php">Tareas</a>
-    <a href="">Perfil</a>
-    <a href="planes.php">Planes</a>
-    <a href="logout.php" class="logout-btn">Cerrar sesión</a>
-    <button class="dark-mode-toggle" onclick="document.body.classList.toggle('dark-mode')">🌙 / ☀️</button>
-  </nav>
-</header>
+    <header class="header">
+        <h1>TaskTart</h1>
+        <nav class="navBar">
+            <a href="dashboard.php">Dashboard</a>
+            <a href="tareas.php">Tareas</a>
+            <a href="">Perfil</a>
+            <a href="planes.php">Planes</a>
+            <a href="logout.php" class="logout-btn">Cerrar sesión</a>
+              <button class="dark-toggle" onclick="toggleDarkMode()" title="Cambiar tema">
+        🌙
+</button>
+    </header>
 
-<div class="bg-white p-5">
-  <h2>Bienvenido <?php echo htmlspecialchars($user['nombre']); ?> 👋</h2>
-  <p>Has iniciado sesión correctamente.</p>
+     <!-- Dark Mode Toggle -->
+      <script>
+        // Dark mode toggle function
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const darkToggle = document.querySelector('.dark-toggle');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                darkToggle.textContent = '☀️';
+            } else {
+                darkToggle.textContent = '🌙';
+            }
+        }
+      </script>
+<div class="bg-white bg-opacity-25 w-50 p-5 text-center mt-2 position-relative start-50 translate-middle-x" style="border-radius: 30px;">
+    <h2>Bienvenido <?php echo htmlspecialchars($user['nombre']); ?> 👋</h2>
+    <p>Has iniciado sesión correctamente.</p>
 </div>
 
 <div class="container-fluid p-4">
@@ -138,13 +159,13 @@ $proyectosDisponibles = $proyectoModel->obtenerProyectosDisponibles($user['id_us
 
   <!-- Sección de proyectos -->
   <div class="card shadow-lg border-0 rounded-4">
-    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+    <div class="card-header bg-primary bg-opacity-50 text-white d-flex justify-content-between align-items-center">
       <h3 class="mb-0"><i class="fas fa-folder-open me-2"></i> Proyectos</h3>
       <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#crearProyectoModal">
         <i class="fas fa-plus"></i> Nuevo Proyecto
       </button>
     </div>
-    <div class="card-body">
+    <div class="card-body bg-opacity-25">
       <h5><i class="fas fa-user"></i> Mis proyectos</h5>
       <div class="row mb-4">
         <?php if (count($proyectosPropios) > 0): ?>
