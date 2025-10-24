@@ -37,10 +37,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href="login.php">Iniciar sesión</a>
             <a href="register.php">Registrarse</a>
         </nav>
-        <button onclick="document.body.classList.toggle('dark-mode')">
-  🌙 / ☀️
+        <button class="dark-toggle" onclick="toggleDarkMode()" title="Cambiar tema">
+        🌙
 </button>
     </header>
+
+     <!-- Dark Mode Toggle -->
+      <script>
+        // Dark mode toggle function
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const darkToggle = document.querySelector('.dark-toggle');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                darkToggle.textContent = '☀️';
+            } else {
+                darkToggle.textContent = '🌙';
+            }
+        }
+      </script>
     
 
 <?php if (!empty($message)) : ?>
