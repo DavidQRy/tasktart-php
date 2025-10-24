@@ -36,10 +36,10 @@ $permisos = [
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['accion']) && $_POST['accion'] === 'crear') {
         $controller->store();
-    } elseif (isset($_POST['accion']) && $_POST['accion'] === 'editar' && isset($_POST['id_tarea']) && in_array("editar", $permisos[$rolUsuario])) {
+    } elseif (isset($_POST['accion']) && $_POST['accion'] === 'editar' ) {
         $controller->update($_POST['id_tarea']);
     }
-} elseif (isset($_GET['delete']) && in_array("eliminar", $permisos[$rolUsuario])) {
+} elseif (isset($_GET['delete']) ) {
     $controller->delete($_GET['delete']);
 }
 

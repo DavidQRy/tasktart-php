@@ -265,7 +265,7 @@ public function obtenerPlanUsuario($id_usuario) {
     $sql = "SELECT p.nombre AS plan_nombre, p.limite_proyectos, p.limite_tareas
             FROM pagos pa
             INNER JOIN planes p ON pa.id_plan = p.id_plan
-            WHERE pa.id_usuario = ? 
+            WHERE pa.id_usuario = ? and pa.estado = 'Completado'
             ORDER BY pa.fecha_pago DESC LIMIT 1";
     $stmt = $this->conn->prepare($sql);
     $stmt->bind_param("i", $id_usuario);
